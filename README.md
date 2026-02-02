@@ -281,51 +281,6 @@ cd /www/wwwroot/your-project/backend && php cron_reset_orders.php
 | 个人中心 | 余额、VIP、提现、钱包流水 | 可放置 `docs/readme-images/screen-profile.png` |
 | 幸运抽奖 | 大转盘与中奖记录 | 可放置 `docs/readme-images/screen-lottery.png` |
 
-**技术栈示意** ：
-```mermaid
-graph TD
-    %% 定义角色
-    Admin((中国老板/管理员))
-    TG[Telegram Bot 终端]
-    
-    %% AI 调度层
-    subgraph AI_Engine [AI 智能调度中枢]
-        NLP[自然语言解析/意图识别]
-        Skill[OpenAPI 技能映射]
-        Security[安全拦截与审计]
-    end
-
-    %% 核心业务层
-    subgraph Core_System [跨境商城核心后端]
-        direction LR
-        Order[订单/分润系统]
-        Wallet[财务/钱包服务]
-        Agent[代理/会员管理]
-        Draw[营销/抽奖引擎]
-    end
-
-    %% 数据与外部接口
-    DB[(MySQL 8.0 / Redis)]
-    Pay{跨境支付网关}
-    USDT[USDT / Wise / Revolut]
-
-    %% 连接关系
-    Admin -- "语音/文字指令" --> TG
-    TG --> NLP
-    NLP --> Skill
-    Skill -- "权限校验" --> Security
-    Security -- "执行 API 调用" --> Core_System
-    
-    Core_System --> DB
-    Core_System -.-> Pay
-    Pay --> USDT
-
-    %% 样式美化
-    style AI_Engine fill:#f9f,stroke:#333,stroke-width:2px
-    style Core_System fill:#bbf,stroke:#333,stroke-width:2px
-    style Security fill:#ff9,stroke:#f66,stroke-width:2px
-
-*若暂无图片，可先创建 `docs/readme-images/` 目录，后续补充截图与架构图，有利于搜索引擎与访客理解项目。*
 
 ---
 
