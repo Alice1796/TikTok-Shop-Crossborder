@@ -274,15 +274,30 @@ cd /www/wwwroot/your-project/backend && php cron_reset_orders.php
 
 | 模块 | 说明 | 图片演示| 
 | :--- | :--- | :--- |
-| **登录/注册** | 多语言登录与邀请码注册 | <img src="docs/readme-images/screen-login.png" width="250" alt="登录注册"> |
-| **首页** | 多语言首页、活动与公告 | <img src="docs/readme-images/screen-home.png" width="250" alt="首页演示"> |
-| **订单任务** | 订单列表与提交任务 | <img src="docs/readme-images/screen-order.png" width="250" alt="订单任务"> |
-| **个人中心** | 余额、VIP、提现、钱包流水 | <img src="docs/readme-images/screen-profile.png" width="250" alt="个人中心"> |
-| **幸运抽奖** | 大转盘与中奖记录 | <img src="docs/readme-images/screen-lottery.png" width="250" alt="幸运抽奖"> |
+| **登录/注册** | 抖音商城多语言登录与邀请码注册 | <img src="docs/readme-images/screen-login.png" width="250" alt="登录注册"> |
+| **首页** | 抖音商城多语言首页、活动与公告 | <img src="docs/readme-images/screen-home.png" width="250" alt="首页演示"> |
+| **订单任务** | 抖音商城订单列表与提交任务 | <img src="docs/readme-images/screen-order.png" width="250" alt="订单任务"> |
+| **个人中心** | 抖音商城余额、VIP | <img src="docs/readme-images/screen-profile.png" width="250" alt="个人中心"> |
+| **幸运抽奖** | 抖音商城首页 | <img src="docs/readme-images/screen-lottery.png" width="250" alt="幸运抽奖"> |
 
 
 ---
+## 后台截图展示
 
+| 模块 | 说明 | 图片演示| 
+| :--- | :--- | :--- |
+| **总后台管理页面** | 总后台管理 | <img src="docs/readme-images/screen-logintiktok-shop.png" width="250" alt="总后台"> |
+| **代理后台管理页面** | 代理后台管理 | <img src="docs/readme-images/tiktok-shop1.png" width="250" alt="代理后台"> |
+| **业务员后台管理页面** | 业务员后台管理 | <img src="docs/readme-images/tiktok-shop2.png" width="250" alt="业务员"> |
+| **用户管理功能** | 用户管理 | <img src="docs/readme-images/tiktok-shop3.png" width="250" alt="用户管理"> |
+| **部分设置功能展示** | 插针演示 | <img src="docs/readme-images/tiktok-shop4.png" width="250" alt="功能展示"> |
+
+📈 获客与咨询 (Contact for Business)
+如果您需要完整的商业版源码、数据库结构以及 AI 自动化部署方案，请联系：
+
+Telegram: 👉 点击联系技术负责人 (@daiqi56)
+
+业务范围：承接各类交易所、跨境商城、TikTok 自动化工具深度定制。
 ## ❓ 常见问题
 
 **Q：登录后 401 或提示未登录？**  
