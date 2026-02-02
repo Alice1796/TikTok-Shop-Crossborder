@@ -35,7 +35,7 @@ TikTok Shop 跨境商城后台全套解决方案 (AI-Powered)
 
 ## 📖 项目简介 | About
 
-**阿洋九点刷** 是一套完整的 **多语言任务与会员钱包 Web 应用**，包含：
+**抖音商城系统** 是一套完整的 **多语言任务与会员钱包 Web 应用**，包含：
 
 - **用户端**：注册/登录（邀请码）、VIP 等级购买、订单任务流程、余额与提现、充值记录、站内消息、公告、幸运大转盘抽奖等。
 - **后台管理**：用户与订单管理、财务管理、产品与公告、系统配置等（基于 ThinkPHP 多应用 + 后台模板）。
@@ -74,7 +74,7 @@ TikTok Shop 跨境商城后台全套解决方案 (AI-Powered)
 | | vue-i18n | 多语言 |
 | **扩展** | BCMath、CURL、JSON | PHP 扩展；可选 Memcache、ImageMagick |
 
-下图概括前后端与数据流关系（在 GitHub/GitLab 上会渲染为图）：
+下图概括前后端与数据流关系：
 
 ```mermaid
 flowchart LR
@@ -281,9 +281,49 @@ cd /www/wwwroot/your-project/backend && php cron_reset_orders.php
 | 个人中心 | 余额、VIP、提现、钱包流水 | 可放置 `docs/readme-images/screen-profile.png` |
 | 幸运抽奖 | 大转盘与中奖记录 | 可放置 `docs/readme-images/screen-lottery.png` |
 
-**技术栈示意**（可将技术栈/架构图放于此）：
+**技术栈示意** ：
 
-![Tech Stack](docs/readme-images/architecture-stack.png)
+graph TD
+    %% 定义角色
+    Admin((中国老板/管理员))
+    TG[Telegram Bot 终端]
+    
+    %% AI 调度层
+    subgraph AI_Engine [AI 智能调度中枢]
+        NLP[自然语言解析/意图识别]
+        Skill[OpenAPI 技能映射]
+        Security[安全拦截与审计]
+    end
+
+    %% 核心业务层
+    subgraph Core_System [跨境商城核心后端]
+        direction LR
+        Order[订单/分润系统]
+        Wallet[财务/钱包服务]
+        Agent[代理/会员管理]
+        Draw[营销/抽奖引擎]
+    end
+
+    %% 数据与外部接口
+    DB[(MySQL 8.0 / Redis)]
+    Pay{跨境支付网关}
+    USDT[USDT / Wise / Revolut]
+
+    %% 连接关系
+    Admin -- "语音/文字指令" --> TG
+    TG --> NLP
+    NLP --> Skill
+    Skill -- "权限校验" --> Security
+    Security -- "执行 API 调用" --> Core_System
+    
+    Core_System --> DB
+    Core_System -.-> Pay
+    Pay --> USDT
+
+    %% 样式美化
+    style AI_Engine fill:#f9f,stroke:#333,stroke-width:2px
+    style Core_System fill:#bbf,stroke:#333,stroke-width:2px
+    style Security fill:#ff9,stroke:#f66,stroke-width:2px
 
 *若暂无图片，可先创建 `docs/readme-images/` 目录，后续补充截图与架构图，有利于搜索引擎与访客理解项目。*
 
