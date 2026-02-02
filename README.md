@@ -286,11 +286,11 @@ cd /www/wwwroot/your-project/backend && php cron_reset_orders.php
 
 | 模块 | 说明 | 图片演示| 
 | :--- | :--- | :--- |
-| **总后台管理页面** | 总后台管理 | <img src="docs/readme-images/screen-logintiktok-shop.png" width="250" alt="总后台"> |
-| **代理后台管理页面** | 代理后台管理 | <img src="docs/readme-images/tiktok-shop1.png" width="250" alt="代理后台"> |
-| **业务员后台管理页面** | 业务员后台管理 | <img src="docs/readme-images/tiktok-shop2.png" width="250" alt="业务员"> |
-| **用户管理功能** | 用户管理 | <img src="docs/readme-images/tiktok-shop3.png" width="250" alt="用户管理"> |
-| **部分设置功能展示** | 插针演示 | <img src="docs/readme-images/tiktok-shop4.png" width="250" alt="功能展示"> |
+| **总后台管理页面** | 总后台管理 | <img src="docs/readme-images/tiktok-shop.png" width="300" alt="总后台"> |
+| **代理后台管理页面** | 代理后台管理 | <img src="docs/readme-images/tiktok-shop1.png" width="300" alt="代理后台"> |
+| **业务员后台管理页面** | 业务员后台管理 | <img src="docs/readme-images/tiktok-shop2.png" width="300" alt="业务员"> |
+| **用户管理功能** | 用户管理 | <img src="docs/readme-images/tiktok-shop3.png" width="300" alt="用户管理"> |
+| **部分设置功能展示** | 插针演示 | <img src="docs/readme-images/tiktok-shop4.png" width="300" alt="功能展示"> |
 
 📈 获客与咨询 (Contact for Business)
 如果您需要完整的商业版源码、数据库结构以及 AI 自动化部署方案，请联系：
