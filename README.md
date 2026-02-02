@@ -295,7 +295,7 @@ cd /www/wwwroot/your-project/backend && php cron_reset_orders.php
 📈 获客与咨询 (Contact for Business)
 如果您需要完整的商业版源码、数据库结构以及 AI 自动化部署方案，请联系：
 
-Telegram: 👉 点击联系技术负责人 (@daiqi56)
+Telegram: 👉 点击联系技术负责人 (@daqi56)
 
 业务范围：承接各类交易所、跨境商城、TikTok 自动化工具深度定制。
 ## ❓ 常见问题
