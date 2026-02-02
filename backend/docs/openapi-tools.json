@@ -1,0 +1,779 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "阿洋九点刷 Backend API（AI 工具集）",
+    "description": "本接口文档用于 AI 调用：每个接口都配有「大白话」说明，方便 AI 理解何时该调哪个接口、必传哪些参数。",
+    "version": "1.0.0"
+  },
+  "servers": [
+    { "url": "/api", "description": "API 根路径，请按实际部署替换" }
+  ],
+  "tags": [
+    { "name": "登录注册", "description": "登录、注册、退出、首页与协议" },
+    { "name": "账户与资金", "description": "用户信息、签到、密码、银行卡、提现、充值、钱包与充值记录" },
+    { "name": "订单与交易", "description": "生成订单、提交订单、订单列表与详情" },
+    { "name": "抽奖", "description": "奖品列表与开奖" }
+  ],
+  "paths": {
+    "/login": {
+      "post": {
+        "tags": ["登录注册"],
+        "summary": "用户登录",
+        "description": "这是用户登录接口。必须传用户名 username 和密码 pass；可选传 lang 做多语言错误提示（如 zh/en/pt）。登录成功会返回 authorization，后续需要登录的接口都要在请求头里带上这个值。会更新用户的最后登录时间和 IP，并往缓存里写入登录态。",
+        "operationId": "login",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["username", "pass"],
+                "properties": {
+                  "username": { "type": "string", "description": "登录用户名，必填" },
+                  "pass": { "type": "string", "description": "登录密码，必填" },
+                  "lang": { "type": "string", "description": "语言码：zh/pt/nl/he/fr/es/en/de/ar，用于错误提示文案" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功返回 authorization，失败返回对应错误文案"
+          }
+        }
+      }
+    },
+    "/register": {
+      "post": {
+        "tags": ["登录注册"],
+        "summary": "用户注册",
+        "description": "这是用户注册接口。必须传 username（同时当昵称）、pass（登录密码）、deal_pass（交易密码）、invite_code（邀请码）；可选传 langs 做多语言提示。会校验邀请码是否有效、上级是否被禁用、用户名是否重复，通过后插入新用户并给上级 sub_num+1，同时插入一条欢迎消息。注册奖励金额来自后台配置。",
+        "operationId": "doRegister",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["username", "pass", "deal_pass", "invite_code"],
+                "properties": {
+                  "username": { "type": "string", "description": "用户名，必填，同时作为昵称" },
+                  "pass": { "type": "string", "description": "登录密码，必填" },
+                  "deal_pass": { "type": "string", "description": "交易密码，必填" },
+                  "invite_code": { "type": "string", "description": "邀请码，必填，用于绑定上级" },
+                  "langs": { "type": "string", "description": "语言码，用于错误提示" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "注册成功或失败信息"
+          }
+        }
+      }
+    },
+    "/logout": {
+      "post": {
+        "tags": ["登录注册"],
+        "summary": "退出登录",
+        "description": "这是退出登录接口。需要带登录态（Header 里 authorization）。作用就是把当前这个 token 从缓存里删掉，相当于下线。",
+        "operationId": "logout",
+        "responses": {
+          "200": {
+            "description": "退出成功"
+          }
+        }
+      }
+    },
+    "/getArticle": {
+      "get": {
+        "tags": ["登录注册"],
+        "summary": "获取文章/文案内容",
+        "description": "这是拉取公告、帮助、关于我们、服务介绍等静态文案的接口。传 lang 可以按语言取对应内容（如 announcement_center_zh、help_en 等），不写就取默认。不涉及数据库写操作，数据来自配置缓存。",
+        "operationId": "getArticle",
+        "parameters": [
+          { "name": "lang", "in": "query", "schema": { "type": "string" }, "description": "语言码，决定取哪一套文案" }
+        ],
+        "responses": {
+          "200": {
+            "description": "返回 announcement、help、about_us、services 等字段"
+          }
+        }
+      }
+    },
+    "/goodsList": {
+      "post": {
+        "tags": ["登录注册"],
+        "summary": "商品列表（首页商品）",
+        "description": "这是获取首页商品列表的接口。传 page 分页，每页 20 条；只返回 see=1 的商品。用于前台展示可购买/可做单的商品。",
+        "operationId": "goodsList",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "page": { "type": "integer", "default": 1, "description": "页码" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "商品列表，每条含 id、name、img、price 等"
+          }
+        }
+      }
+    },
+    "/noticeList": {
+      "post": {
+        "tags": ["登录注册"],
+        "summary": "公告列表",
+        "description": "这是获取公告列表的接口。传 page 分页，每页 10 条，按 id 倒序。用于前台展示系统公告。",
+        "operationId": "noticeList",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "page": { "type": "integer", "default": 1, "description": "页码" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "公告列表"
+          }
+        }
+      }
+    },
+    "/getIndex": {
+      "post": {
+        "tags": ["登录注册"],
+        "summary": "获取首页数据",
+        "description": "这是获取首页完整数据的接口。如果带了登录态，会多返回未读消息数、VIP 列表等；不带登录态也能拿到运营时间、活动图、证书图、弹窗、规则、关于我们、客服链接等配置。数据主要来自系统配置和 level 表，不写库。",
+        "operationId": "getIndex",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": { "type": "object" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "config（含多语言）、no_read_mes（登录时）、vip_list（登录时）等"
+          }
+        }
+      }
+    },
+    "/getCustomer": {
+      "post": {
+        "tags": ["登录注册"],
+        "summary": "获取客服列表",
+        "description": "这是获取客服联系方式的接口。不传参，从系统配置里取客服链接（如 kefu、kefu1～kefu4），返回给前端展示。不涉及数据库表。",
+        "operationId": "getCustomer",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": { "type": "object" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "客服链接列表"
+          }
+        }
+      }
+    },
+    "/getVipList": {
+      "post": {
+        "tags": ["登录注册"],
+        "summary": "获取 VIP 等级列表",
+        "description": "这是获取所有 VIP 等级的接口。返回等级价格、提现比例、订单比例、图片等，用于前台展示「购买会员」页。不写库，只读 level 表。",
+        "operationId": "getVipList",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": { "type": "object" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "VIP 等级列表"
+          }
+        }
+      }
+    },
+    "/buyVip": {
+      "post": {
+        "tags": ["登录注册"],
+        "summary": "购买/升级 VIP",
+        "description": "这是用余额购买或升级 VIP 的接口。必须传 level_id（要买到的等级）。会校验：已是该等级不能重复买、不能降级、余额要够扣款。扣款后加奖励金额（若有），并写两条钱包流水（扣款+奖励）。需要登录。",
+        "operationId": "buyVip",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["level_id"],
+                "properties": {
+                  "level_id": { "type": "integer", "description": "要购买/升级到的等级 ID，必填" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "成功或失败（余额不足、不可降级等）"
+          }
+        }
+      }
+    },
+    "/getMesList": {
+      "post": {
+        "tags": ["登录注册"],
+        "summary": "消息列表",
+        "description": "这是获取当前用户站内消息列表的接口。传 page 分页，每页 10 条；可选 web_time 做时区偏移。需要登录，按 uid 查 message 表。",
+        "operationId": "getMesList",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "page": { "type": "integer", "default": 1 },
+                  "web_time": { "type": "string", "description": "前端时间，用于计算时间差" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "消息列表，带 total、last_page"
+          }
+        }
+      }
+    },
+    "/setMesRead": {
+      "post": {
+        "tags": ["登录注册"],
+        "summary": "设置消息已读",
+        "description": "这是把某条消息标成已读的接口。必须传 mes_id（消息 ID）。会把该条消息的 status 更新为 1。需要登录。",
+        "operationId": "setMesRead",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["mes_id"],
+                "properties": {
+                  "mes_id": { "type": "integer", "description": "消息 ID，必填" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "操作成功"
+          }
+        }
+      }
+    },
+    "/getAppList": {
+      "post": {
+        "tags": ["登录注册"],
+        "summary": "App 滚动列表",
+        "description": "这是获取 App 里滚动展示内容列表的接口。不传参，返回所有滚动项的 id、name、img。不写库。",
+        "operationId": "getAppList",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": { "type": "object" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "滚动项列表"
+          }
+        }
+      }
+    },
+    "/getAppInfo": {
+      "post": {
+        "tags": ["登录注册"],
+        "summary": "App 滚动项详情",
+        "description": "这是根据 id 获取某一条滚动内容详情的接口。必须传 id；可选 web_time 做时间偏移。用于点击某条滚动进入详情页。",
+        "operationId": "getAppInfo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["id"],
+                "properties": {
+                  "id": { "type": "integer", "description": "滚动项 ID，必填" },
+                  "web_time": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "单条滚动详情"
+          }
+        }
+      }
+    },
+    "/getAgreement": {
+      "post": {
+        "tags": ["登录注册"],
+        "summary": "获取注册协议",
+        "description": "这是获取注册协议内容的接口。不传参，从配置表里读 id=5 的协议（如 register_vi、register_en），返回给前端展示「同意协议」文案。",
+        "operationId": "getAgreement",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": { "type": "object" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "协议内容"
+          }
+        }
+      }
+    },
+    "/getUserInfo": {
+      "post": {
+        "tags": ["账户与资金"],
+        "summary": "获取用户基本信息",
+        "description": "这是获取当前登录用户基本资料的接口。需要登录，不传参。返回用户名、昵称、等级、信用分、邀请码、余额、待支付订单占用金额、今日佣金、团队佣金、待提现金额、等级信息、邀请链接等。会读 user、level、wallet_log、order、withdraw 等做汇总。",
+        "operationId": "getUserInfo",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": { "type": "object" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "用户信息对象"
+          }
+        }
+      }
+    },
+    "/sign": {
+      "post": {
+        "tags": ["账户与资金"],
+        "summary": "签到",
+        "description": "这是每日签到接口。需要登录，不传参。会校验当前等级要求的订单数是否达标、当天是否已签到，通过则在签到表插入一条记录。",
+        "operationId": "sign",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": { "type": "object" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "签到成功或失败（已签过、订单数不足等）"
+          }
+        }
+      }
+    },
+    "/changePass": {
+      "post": {
+        "tags": ["账户与资金"],
+        "summary": "修改密码",
+        "description": "这是修改登录密码或交易密码的接口。必须传 old_pass（旧密码）、new_pass（新密码）、type（1=改登录密码，2=改交易密码）。会先校验旧密码对不对，再更新 user 表。需要登录。",
+        "operationId": "changePass",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["old_pass", "new_pass"],
+                "properties": {
+                  "old_pass": { "type": "string", "description": "旧密码，必填" },
+                  "new_pass": { "type": "string", "description": "新密码，必填" },
+                  "type": { "type": "integer", "default": 1, "description": "1=登录密码，2=交易密码" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "修改成功或旧密码错误"
+          }
+        }
+      }
+    },
+    "/getCard": {
+      "post": {
+        "tags": ["账户与资金"],
+        "summary": "获取银行卡/收款信息",
+        "description": "这是获取当前用户已绑定的银行卡或收款方式（姓名、卡号、Wise/Revolut/USDT 等）的接口。需要登录，不传参。同时返回后台配置的银行类型列表及当前选中的项。",
+        "operationId": "getCard",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": { "type": "object" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "当前绑定信息 + bank_list"
+          }
+        }
+      }
+    },
+    "/setCard": {
+      "post": {
+        "tags": ["账户与资金"],
+        "summary": "设置/修改银行卡或收款信息",
+        "description": "这是绑定或修改用户提款信息的接口。可传 name、card_no、account_name、account_open_name、mobile、wise、revolut、usdt、type 等。若之前没绑过就插入一条 bank 并把用户 bind_card 置 1；若绑过且系统允许修改则更新，并写一条 bank_log。需要登录；是否允许修改由配置 can_modify_bind_bank 控制。",
+        "operationId": "setCard",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "name": { "type": "string" },
+                  "card_no": { "type": "string" },
+                  "account_name": { "type": "string" },
+                  "account_open_name": { "type": "string" },
+                  "mobile": { "type": "string" },
+                  "wise": { "type": "string" },
+                  "revolut": { "type": "string" },
+                  "usdt": { "type": "string" },
+                  "type": { "type": "string", "default": "1" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "操作成功或失败"
+          }
+        }
+      }
+    },
+    "/setWithData": {
+      "post": {
+        "tags": ["账户与资金"],
+        "summary": "申请提现",
+        "description": "这是用户申请提现的接口。必须传 price（提现金额）、pass（交易密码）、web_time（前端时间）；可选 type（提款方式）、langs。会校验：提现时间段、每天只能提一次、账号未禁用、需完成指定单数、交易密码、信用分、金额在等级最小/最大范围内、余额够扣（含手续费）。通过后插入 withdraw 并扣用户 balance、加 freeze_balance。需要登录且先绑定 USDT 等收款信息（type=4 时校验 usdt 是否填写）。",
+        "operationId": "setWithData",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["price", "pass", "web_time"],
+                "properties": {
+                  "price": { "type": "number", "description": "提现金额，必填" },
+                  "pass": { "type": "string", "description": "交易密码，必填" },
+                  "type": { "type": "string", "default": "1", "description": "提款方式" },
+                  "langs": { "type": "string" },
+                  "web_time": { "type": "string", "description": "前端时间，必填，用于时段校验" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "提交成功或各类校验失败提示"
+          }
+        }
+      }
+    },
+    "/getWithList": {
+      "post": {
+        "tags": ["账户与资金"],
+        "summary": "提现记录列表",
+        "description": "这是获取当前用户提现记录列表的接口。传 page 分页，可选 web_time 做时间偏移。需要登录，按 uid 查 withdraw 表。",
+        "operationId": "getWithList",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "page": { "type": "integer", "default": 1 },
+                  "web_time": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "提现记录列表，带 total、last_page"
+          }
+        }
+      }
+    },
+    "/invest": {
+      "post": {
+        "tags": ["账户与资金"],
+        "summary": "充值（提交充值记录）",
+        "description": "这是用户端提交一条「充值」记录的接口。必须传 price 或 price_num（金额）以及 web_time（前端时间）。会在 recharge 表插入一条记录（status=4 等），用于记录用户发起的充值意向或第三方回调前的占位。需要登录；实际加余额一般由后台或支付回调完成。",
+        "operationId": "invest",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["web_time"],
+                "properties": {
+                  "price": { "type": "number", "description": "充值金额，与 price_num 二选一" },
+                  "price_num": { "type": "number", "description": "充值金额，与 price 二选一" },
+                  "web_time": { "type": "string", "description": "前端时间，必填" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "操作成功"
+          }
+        }
+      }
+    },
+    "/getWalletList": {
+      "post": {
+        "tags": ["账户与资金"],
+        "summary": "钱包流水列表",
+        "description": "这是获取当前用户钱包流水（余额变动记录）的接口。传 page 分页，可选 web_time。返回类型包括充值、提现、订单扣款、佣金、返佣、等级购买、返还本金等，每条带标题和金额正负。需要登录。",
+        "operationId": "getWalletList",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "page": { "type": "integer", "default": 1 },
+                  "web_time": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "流水列表，带 total、last_page"
+          }
+        }
+      }
+    },
+    "/getRechargeList": {
+      "post": {
+        "tags": ["账户与资金"],
+        "summary": "后台充值记录列表",
+        "description": "这是获取当前用户「后台充值」成功记录列表的接口。只查 status=1 且 beizhu 为空的 recharge 记录，传 page 分页，可选 web_time。用于前台展示「充值记录」页。需要登录。",
+        "operationId": "getRechargeList",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "page": { "type": "integer", "default": 1 },
+                  "web_time": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "充值记录列表，带 total、last_page"
+          }
+        }
+      }
+    },
+    "/setOrder": {
+      "post": {
+        "tags": ["订单与交易"],
+        "summary": "生成订单",
+        "description": "这是为用户生成一笔新订单的接口。需要登录。可选传 lang、web_time。会先看用户余额是否至少 10、抢单状态（graborders）；再在运营时间内随机选一个符合余额的商品，插入订单并更新用户 order_total 等，同时写一条扣款类型的钱包流水（预扣）。若已有未完成订单会直接报错。",
+        "operationId": "setOrder",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "lang": { "type": "string" },
+                  "web_time": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "返回新订单信息（含订单号、商品、金额、佣金等）或余额不足/已有未完成订单等提示"
+          }
+        }
+      }
+    },
+    "/commitOrder": {
+      "post": {
+        "tags": ["订单与交易"],
+        "summary": "提交订单（完成订单并分佣）",
+        "description": "这是用户「完成」一笔订单的接口，即确认订单、扣款、返佣、解冻等。必须传 order_id。需要登录且订单必须属于当前用户、状态为待支付。会扣用户余额、写钱包流水、按等级和上级关系做多级返佣、更新订单状态等。适合在用户点击「提交订单」或「完成任务」时调用。",
+        "operationId": "commitOrder",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["order_id"],
+                "properties": {
+                  "order_id": { "type": "integer", "description": "订单 ID，必填" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "提交成功或余额不足、订单状态错误等"
+          }
+        }
+      }
+    },
+    "/getOrderList": {
+      "post": {
+        "tags": ["订单与交易"],
+        "summary": "订单列表",
+        "description": "这是获取当前用户订单列表的接口。传 page 分页，可选 status（按状态筛选）、web_time、lang。返回订单与商品名称、图片、金额、佣金等。需要登录。",
+        "operationId": "getOrderList",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "page": { "type": "integer", "default": 1 },
+                  "status": { "type": "integer", "description": "订单状态，0=全部" },
+                  "web_time": { "type": "string" },
+                  "lang": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "订单列表，带 total、last_page"
+          }
+        }
+      }
+    },
+    "/getOrderInfo": {
+      "post": {
+        "tags": ["订单与交易"],
+        "summary": "订单详情",
+        "description": "这是根据 order_id 获取单笔订单详情的接口。必须传 order_id；可选 web_time、lang。返回订单信息及关联商品名称、图片等。不校验是否本人，只按 id 查（一般前台只展示自己的订单）。",
+        "operationId": "getOrderInfo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "required": ["order_id"],
+                "properties": {
+                  "order_id": { "type": "integer", "description": "订单 ID，必填" },
+                  "web_time": { "type": "string" },
+                  "lang": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "单条订单详情"
+          }
+        }
+      }
+    },
+    "/getList": {
+      "get": {
+        "tags": ["抽奖"],
+        "summary": "抽奖奖品列表",
+        "description": "这是获取抽奖活动里所有奖品配置的接口。不传参，返回奖品列表（含 prizeId、prizeImage 等），用于转盘或抽奖页展示。只读 goods2 表，不写库。",
+        "operationId": "jiangGetList",
+        "responses": {
+          "200": {
+            "description": "奖品列表"
+          }
+        }
+      }
+    },
+    "/kaiJiang": {
+      "post": {
+        "tags": ["抽奖"],
+        "summary": "开奖（抽一次奖）",
+        "description": "这是用户执行一次抽奖的接口。需要登录，不传参。若用户有未使用的预置奖品（jiang 字段）则直接消耗一个并返回；否则按权重随机一个奖品，写入 goods3 中奖记录，并把用户 jiangk（抽奖次数）减 1。适合在用户点击「抽奖」时调用。",
+        "operationId": "kaiJiang",
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": { "type": "object" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "返回中奖奖品 id 或失败提示"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "authorization": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "authorization",
+        "description": "登录后返回的 token；凡 description 里写了「需要登录」的接口，请求头都要带 authorization"
+      }
+    }
+  }
+}
