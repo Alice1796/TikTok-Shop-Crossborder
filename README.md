@@ -282,7 +282,7 @@ cd /www/wwwroot/your-project/backend && php cron_reset_orders.php
 | 幸运抽奖 | 大转盘与中奖记录 | 可放置 `docs/readme-images/screen-lottery.png` |
 
 **技术栈示意** ：
-
+```mermaid
 graph TD
     %% 定义角色
     Admin((中国老板/管理员))
