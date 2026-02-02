@@ -1,7 +1,7 @@
 # TikTok-Shop-Crossborder
 TikTok Shop 跨境商城后台全套解决方案 (AI-Powered)
 本项目是一套专为中国出海老板设计的成熟、可商用跨境电商系统。它不仅解决了“能不能用”的问题，更通过 AI 深度集成解决了“好不好用”和“运营成本”的问题。
-# 阿洋九点刷 · 多语言任务与钱包系统 | ThinkPHP + UniApp 全栈项目
+# 抖音商城 · 多语言任务与钱包系统 | ThinkPHP + UniApp 全栈项目
 
 [![PHP](https://img.shields.io/badge/PHP-7.2%2B-777BB4?logo=php)](https://www.php.net/)
 [![ThinkPHP](https://img.shields.io/badge/ThinkPHP-6.x-green)](https://www.thinkphp.cn/)
