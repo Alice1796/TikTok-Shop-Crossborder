@@ -2,7 +2,7 @@
 TikTok Shop 跨境商城后台全套解决方案 (AI-Powered)
 本项目是一套专为中国出海老板设计的成熟、可商用跨境电商系统。它不仅解决了“能不能用”的问题，更通过 AI 深度集成解决了“好不好用”和“运营成本”的问题。
 # 抖音商城 · 多语言任务与钱包系统 | ThinkPHP + UniApp 全栈项目
-
+[👉 立即联系获取完整演示版: @daqi56] （注：本仓库仅展示核心架构与 API 协议，完整商业源码请咨询获取）
 [![PHP](https://img.shields.io/badge/PHP-7.2%2B-777BB4?logo=php)](https://www.php.net/)
 [![ThinkPHP](https://img.shields.io/badge/ThinkPHP-6.x-green)](https://www.thinkphp.cn/)
 [![Vue](https://img.shields.io/badge/Vue-2.x-4FC08D?logo=vue.js)](https://vuejs.org/)
@@ -271,7 +271,7 @@ cd /www/wwwroot/your-project/backend && php cron_reset_orders.php
 
 ## 📸 截图与展示
 
-以下为功能模块示意（可将实际运行截图放入 `docs/readme-images/` 并替换链接，便于搜索引擎收录图文内容）：
+
 
 | 模块 | 说明 | 图片 |
 |------|------|----------|
